@@ -10,6 +10,8 @@
 #import "contact.h"
 #import "ModificationViewController.h"
 
+//typedef contact contact;
+
 @interface ViewController ()<UITableViewDataSource, UITableViewDelegate>
 {
 //    BOOL _sfafasdfas;
@@ -44,16 +46,19 @@
     tableView.delegate = self;
     [self.view addSubview:tableView];
     
+    ModificationViewController *modifyVC = [[ModificationViewController alloc] init];
+    modifyVC.delegate = self;
+//    [self.view addSubview:modifyVC];
     
 }
 
 -(void) initData{
     
     _contacts = [[NSMutableArray alloc] init];
-    contact *con1 = [[contact alloc] initWithName:@"Tom" andPhoneNumber:@"18715852616" andAvatar:[UIImage imageNamed:@"down.jpg"]]; // 动态的初始化方式
-    contact *con2 = [[contact alloc] initWithName:@"Bob" andPhoneNumber:@"18777777777" andAvatar:[UIImage imageNamed:@"down.jpg"]];
+    contact *con1 = [[contact alloc] initWithName:@"Tom" andPhoneNumber:@"18715852616" andAvatar:[UIImage imageNamed:@"download.jpg"]]; // 动态的初始化方式
+    contact *con2 = [[contact alloc] initWithName:@"Bob" andPhoneNumber:@"18777777777" andAvatar:[UIImage imageNamed:@"download.jpg"]];
     //静态的话不用先alloc一个空间
-    _contacts = [NSMutableArray arrayWithObjects:con1, con2, nil];
+    _contacts = [NSMutableArray arrayWithObjects: con1, con2, nil];
     
     
 }
@@ -109,9 +114,11 @@
     // 需要 将 con 这个对象传入到新的这个界面中，并允许修改
     
     ModificationViewController *detailModification = [[ModificationViewController alloc]init];
+    detailModification.conTempCopy = con;
+    detailModification.indexPath = indexPath;
     [self presentViewController:detailModification animated:YES completion:nil];
     
-    [self.navigationController pushViewController:detailModification animated:NO];
+//    [self.navigationController pushViewController:detailModification animated:NO];
 }
 
 
@@ -122,7 +129,14 @@
 //    return someNumber;
 //}
 
-
+-(void) selectedIndexPath:(NSIndexPath *)indexPathSelected changedCon:(contact *)con{
+    _contacts[indexPathSelected.row] = con;
+//    _contacts[indexPathSelected.row].phoneNumber = con.phoneNumber;
+//    _contacts[indexPathSelected.row].avatar = con.avatar;
+    NSLog(@"name: %@", con.name);
+    NSLog(@"Phone Number: %@", con.phoneNumber);
+    NSLog(@"Avatar: %@", con.avatar);
+}
 //没有反应？
 /*
 -(CGFloat) tableView:(UITableView *) tableView heightForRowAtIndexPath:(NSIndexPath *) indexPath{
@@ -135,9 +149,5 @@
  
  */
 
-
-- (IBAction)addAction:(id)sender {
-    
-}
 
 @end

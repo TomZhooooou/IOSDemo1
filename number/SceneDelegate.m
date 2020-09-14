@@ -54,5 +54,11 @@
     // to restore the scene back to its current state.
 }
 
+//- (BOOL) application:(UIApplication *) application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions{
+////    self.window = [[UIWindow alloc] initWithFrame:[[UISceen mainScreen] bounds];
+////
+////    self.
+//}
+
 
 @end
