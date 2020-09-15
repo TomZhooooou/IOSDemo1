@@ -8,7 +8,7 @@
 
 #import "ViewController.h"
 #import "contact.h"
-#import "ModificationViewController.h"
+
 
 //typedef contact contact;
 
@@ -16,7 +16,7 @@
 {
 //    BOOL _sfafasdfas;
     NSMutableArray *_contacts;
-    
+    UITableView *_tableView;
 }
 
 @end
@@ -41,15 +41,10 @@
     
     // 定义 tableview
     [self initData];
-    UITableView *tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
-    tableView.dataSource = self;
-    tableView.delegate = self;
-    [self.view addSubview:tableView];
-    
-    ModificationViewController *modifyVC = [[ModificationViewController alloc] init];
-    modifyVC.delegate = self;
-//    [self.view addSubview:modifyVC];
-    
+    _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    [self.view addSubview:_tableView];
 }
 
 -(void) initData{
@@ -114,6 +109,7 @@
     // 需要 将 con 这个对象传入到新的这个界面中，并允许修改
     
     ModificationViewController *detailModification = [[ModificationViewController alloc]init];
+    detailModification.delegate = self;
     detailModification.conTempCopy = con;
     detailModification.indexPath = indexPath;
     [self presentViewController:detailModification animated:YES completion:nil];
@@ -136,6 +132,10 @@
     NSLog(@"name: %@", con.name);
     NSLog(@"Phone Number: %@", con.phoneNumber);
     NSLog(@"Avatar: %@", con.avatar);
+    
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    [_tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPathSelected,nil] withRowAnimation:UITableViewRowAnimationFade];
+    
 }
 //没有反应？
 /*
