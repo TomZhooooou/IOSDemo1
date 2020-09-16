@@ -10,6 +10,8 @@
 #import "contact.h"
 
 
+
+
 //typedef contact contact;
 
 @interface ViewController ()<UITableViewDataSource, UITableViewDelegate>
@@ -17,6 +19,9 @@
 //    BOOL _sfafasdfas;
     NSMutableArray *_contacts;
     UITableView *_tableView;
+//    NSString *_imagePath
+//    UIImage *_image1 = [UIImage imageWithContentsOfFile:imagePath];
+//    UIImage *_image2 = [UIImage imageNamed:@"download.jpg"];
 }
 
 @end
@@ -47,6 +52,10 @@
     [self.view addSubview:_tableView];
 }
 
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 -(void) initData{
     
     _contacts = [[NSMutableArray alloc] init];
@@ -54,7 +63,9 @@
     contact *con2 = [[contact alloc] initWithName:@"Bob" andPhoneNumber:@"18777777777" andAvatar:[UIImage imageNamed:@"download.jpg"]];
     //静态的话不用先alloc一个空间
     _contacts = [NSMutableArray arrayWithObjects: con1, con2, nil];
-    
+//    _imagePath = = [[NSBundle mainBundle] pathForResource:@"download" ofType:@"jpg"];
+//    _image1
+//
     
 }
 -(NSInteger)numberOfSectionsInTableView:(UITableView *) tableView{
@@ -64,33 +75,42 @@
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger) section{
     NSLog(@"计算每组(组%li)行数",(long)section);
     //contact =_contacts[section];
-    return _contacts.count;
+    return 100;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     //NSIndexPath是一个结构体，记录了组和行信息
+    static NSString *CellIdentifier =  @"UITableViewCell";
     NSLog(@"生成单元格(行%li)",indexPath.row);
     //KCContactGroup *group=_contacts[indexPath.section];
-    contact *con = _contacts[indexPath.row];
-    UITableViewCell *cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
+    contact *con = _contacts[0];
+    UITableViewCell *cell = nil;
+//    UITableViewCell *cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];//
+    cell = [_tableView dequeueReusableCellWithIdentifier: CellIdentifier];
     
-    
+    if (!cell) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+        cell.imageView.image = con.avatar;
+        cell.textLabel.text= con.name;
+        cell.detailTextLabel.text=con.phoneNumber;
+    }
     //image
-    NSString *imagePath = [[NSBundle mainBundle] pathForResource:@"download" ofType:@"jpg"];
-    UIImage *image1 = [UIImage imageWithContentsOfFile:imagePath];
-    UIImage *image2 = [UIImage imageNamed:@"download.jpg"];
-    cell.imageView.image = image1;
-    CGSize itemSize = CGSizeMake(40, 40);
-    UIGraphicsBeginImageContextWithOptions(itemSize, NO, UIScreen.mainScreen.scale);
-    CGRect imageRect = CGRectMake(0.0, 0.0, itemSize.width, itemSize.height);
-    [cell.imageView.image drawInRect:imageRect];
-    cell.imageView.image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
+
     
     
-    cell.textLabel.text=con.name;
-    NSLog(@"%@",con.phoneNumber);
-    cell.detailTextLabel.text=con.phoneNumber;  //无法显示 电话号码
+    
+//    cell.imageView.image = image1;
+//    CGSize itemSize = CGSizeMake(40, 40);
+//    UIGraphicsBeginImageContextWithOptions(itemSize, NO, UIScreen.mainScreen.scale);
+//    CGRect imageRect = CGRectMake(0.0, 0.0, itemSize.width, itemSize.height);
+//    [cell.imageView.image drawInRect:imageRect];
+//    cell.imageView.image = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+//
+    NSLog(@"cell info%@",cell);
+//    cell.textLabel.text=con.name;
+//    NSLog(@"%@",con.phoneNumber);
+//    cell.detailTextLabel.text=con.phoneNumber;  //无法显示 电话号码
     return cell;
 }
 
@@ -112,11 +132,34 @@
     detailModification.delegate = self;
     detailModification.conTempCopy = con;
     detailModification.indexPath = indexPath;
+    //observer
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeContact:) name:@"change" object:nil];
+    
+    __weak typeof(self)weakSelf = self; //todo
+    detailModification.block = ^(contact *con){
+//        weakSelf
+            // 通过回调将传进来的字符串赋值给label
+    _contacts[indexPath.row] = con;
+    [_tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationFade];
+    };
+    
     [self presentViewController:detailModification animated:YES completion:nil];
+    
+   
+//    dispatch_async(<#dispatch_queue_t  _Nonnull queue#>, <#^(void)block#>)
+    
     
 //    [self.navigationController pushViewController:detailModification animated:NO];
 }
-
+- (void)changeContact:(NSNotification *)sender{
+    NSIndexPath *path =sender.userInfo[@"path"];
+    contact* con = _contacts[path.row];
+    con.name =sender.userInfo[@"name"];
+    con.phoneNumber = sender.userInfo[@"phoneNumber"];
+//    con.avatar = _contacts[path.row].avatar;
+    _contacts[path.row] = con;
+    [_tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:path,nil] withRowAnimation:UITableViewRowAnimationFade];
+}
 
 //-(NSNumber *)sectionIndexTitlesForTableView:(UITableView *)tableView{
 //    NSLog(@"生成组索引");
