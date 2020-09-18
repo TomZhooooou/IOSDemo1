@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "contact.h"
 
-
+NSString *const NOTIFICATIONFORIMAGEPATH = @"imagePathNotification";
 
 
 //typedef contact contact;
@@ -61,8 +61,18 @@
     _contacts = [[NSMutableArray alloc] init];
     contact *con1 = [[contact alloc] initWithName:@"Tom" andPhoneNumber:@"18715852616" andAvatar:[UIImage imageNamed:@"download.jpg"]]; // 动态的初始化方式
     contact *con2 = [[contact alloc] initWithName:@"Bob" andPhoneNumber:@"18777777777" andAvatar:[UIImage imageNamed:@"download.jpg"]];
-    //静态的话不用先alloc一个空间
     _contacts = [NSMutableArray arrayWithObjects: con1, con2, nil];
+    for(int i = 0; i< 10; i++)
+    {
+        NSString *name = @"Tom";
+        name = [name stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
+        contact *con = [[contact alloc] initWithName:name andPhoneNumber:[@"1877777777" stringByAppendingString:[NSString stringWithFormat:@"%d", i]] andAvatar:[UIImage imageNamed:@"download.jpg"]];
+        [_contacts addObject:con];
+    }
+    
+    
+    //静态的话不用先alloc一个空间
+    
 //    _imagePath = = [[NSBundle mainBundle] pathForResource:@"download" ofType:@"jpg"];
 //    _image1
 //
@@ -73,9 +83,9 @@
     return 1;
 }
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger) section{
-    NSLog(@"计算每组(组%li)行数",(long)section);
+    NSLog(@"计算每组(组%li)行数",[_contacts count]);
     //contact =_contacts[section];
-    return 100;
+    return [_contacts count];
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -83,7 +93,7 @@
     static NSString *CellIdentifier =  @"UITableViewCell";
     NSLog(@"生成单元格(行%li)",indexPath.row);
     //KCContactGroup *group=_contacts[indexPath.section];
-    contact *con = _contacts[0];
+    contact *con = _contacts[indexPath.row];
     UITableViewCell *cell = nil;
 //    UITableViewCell *cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];//
     cell = [_tableView dequeueReusableCellWithIdentifier: CellIdentifier];
@@ -115,8 +125,7 @@
 }
 
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
     contact *con = _contacts[indexPath.row];
@@ -133,29 +142,38 @@
     detailModification.conTempCopy = con;
     detailModification.indexPath = indexPath;
     //observer
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeContact:) name:@"change" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeContact:) name:@"change" object:nil];
     
-    __weak typeof(self)weakSelf = self; //todo
-    detailModification.block = ^(contact *con){
-//        weakSelf
-            // 通过回调将传进来的字符串赋值给label
-    _contacts[indexPath.row] = con;
-    [_tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationFade];
-    };
-    
+
+  
     [self presentViewController:detailModification animated:YES completion:nil];
     
-   
+
 //    dispatch_async(<#dispatch_queue_t  _Nonnull queue#>, <#^(void)block#>)
     
     
 //    [self.navigationController pushViewController:detailModification animated:NO];
+}
+
+- (void) changeContactWithBloc:(NSIndexPath *)indexPath andVC:(ModificationViewController *) detailModification {
+//        todo block
+//        传值多次操作的时候刷新存在问题
+//        __weak typeof(self)weakSelf = self;
+        detailModification.block = ^(contact *con){
+        // 通过回调将传进来的字符串赋值给label
+        _contacts[indexPath.row] = con;
+        [_tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationFade];
+        NSLog(@"name: %@", con.name);
+        NSLog(@"Phone Number: %@", con.phoneNumber);
+        NSLog(@"Avatar: %@", con.avatar);
+        };
 }
 - (void)changeContact:(NSNotification *)sender{
     NSIndexPath *path =sender.userInfo[@"path"];
     contact* con = _contacts[path.row];
     con.name =sender.userInfo[@"name"];
     con.phoneNumber = sender.userInfo[@"phoneNumber"];
+    con.avatar = [UIImage imageWithContentsOfFile: sender.userInfo[NOTIFICATIONFORIMAGEPATH]];
 //    con.avatar = _contacts[path.row].avatar;
     _contacts[path.row] = con;
     [_tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:path,nil] withRowAnimation:UITableViewRowAnimationFade];

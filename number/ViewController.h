@@ -17,7 +17,7 @@
 
 
 @interface ViewController : UIViewController<ModificationViewControllerDelegate>
-
+FOUNDATION_EXPORT NSString *const NOTIFICATIONFORIMAGEPATH;
 //@property (nonatomic, weak) ModificationViewController *modController;
 
 //@property (nonatomic, weak) id<ModificationViewControllerDelegate> delegate;
